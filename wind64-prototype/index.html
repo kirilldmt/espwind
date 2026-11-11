@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0c121b">
+  <meta name="description" content="Локальный интерактивный прототип LED-дисплея 64×64 для прогноза ветра.">
+  <title>WIND64 — ветер в 4096 пикселях</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230c121b'/%3E%3Cpath d='M7 10h16L13 23l3-10H7z' fill='%2366e0c5'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="./" aria-label="WIND64, главная"><span class="brand-mark">↗</span> WIND<span>64</span><i></i><small>ВЕТЕР В 4096 ПИКСЕЛЯХ</small></a>
+    <div class="header-meta"><span class="status-dot"></span> Локальный прототип <span class="version">04 / КРОН</span></div>
+  </header>
+  <main class="workspace">
+    <section class="preview-section" aria-label="Предпросмотр дисплея">
+      <div class="section-title"><div><p class="eyebrow">ВАШЕ ОКНО НА ВОДУ</p><h1>Крон. Ветер на неделю.</h1></div><span class="hardware-tag">P3 · 64 × 64 RGB</span></div>
+      <div class="preview-card">
+        <div class="preview-toolbar"><div class="screen-caption"><span id="screen-letter">1</span><strong id="screen-title">Ближайшие часы</strong></div><div class="segmented" aria-label="Режим просмотра"><button type="button" data-view="led" aria-pressed="true">LED</button><button type="button" data-view="pixel" aria-pressed="false">Пиксели</button></div></div>
+        <div class="display-stage">
+          <div class="dimension top-dimension"><span>64 пикселя</span></div>
+          <div class="device"><div class="screw tl"></div><div class="screw tr"></div><div class="screw bl"></div><div class="screw br"></div><canvas id="pixel-display" width="64" height="64" role="img" aria-label="Пиксельный прогноз 64 на 64" hidden></canvas><canvas id="led-display" width="512" height="512" role="img" aria-label="LED-симуляция прогноза 64 на 64"></canvas></div>
+          <div class="device-label"><span>WIND64</span><span id="display-meta">25 FPS <b>·</b> 80% <b>·</b> ДЕНЬ</span></div>
+        </div>
+        <div class="preview-footer"><span><i class="status-dot"></i><span id="playback-label">Автоматическая смена экранов</span></span><button class="text-button" id="export-png" type="button"><span aria-hidden="true">↓</span> PNG 64 × 64</button></div>
+      </div>
+      <div class="screen-grid" id="screen-grid" aria-label="Пять экранов дисплея"></div>
+      <div class="wind-legend"><div><span>Шкала ветра · Windy.app</span><span>м/с</span></div><div id="wind-scale" class="scale"></div><div class="legend-hint"><span>Цвет ячейки — скорость</span><span>Стрелки и потоки — куда дует</span></div></div>
+    </section>
+    <aside class="control-panel" aria-label="Управление симулятором">
+      <div class="panel-heading"><h2>Пульт управления</h2><span>↗</span></div>
+      <div class="panel-tabs" role="tablist" aria-label="Настройки"><button role="tab" aria-selected="true" aria-controls="tab-forecast" id="tab-button-forecast" data-tab="forecast">Прогноз</button><button role="tab" aria-selected="false" aria-controls="tab-live" id="tab-button-live" data-tab="live">Факт</button><button role="tab" aria-selected="false" aria-controls="tab-display" id="tab-button-display" data-tab="display">Дисплей</button></div>
+      <section id="tab-forecast" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-forecast">
+        <div class="control-group"><div class="label-row"><label for="data-source">Источник прогноза</label><button id="refresh-weather" type="button" class="text-button">↻ Обновить</button></div><select id="data-source"><option value="windy">Windy.app · реальные данные</option><option value="demo">Демонстрационные сценарии</option></select><p id="weather-status" class="field-hint" role="status">Получаем прогноз…</p></div>
+
+        <div class="control-group"><span class="field-label">Один спот — Крон</span><a href="https://windy.app/forecast2/spot/585111" target="_blank" rel="noreferrer">Windy.app · 585111 ↗</a><p class="field-hint">Ближайший полный час, затем шаг 2 часа. Дата первой точки — в заголовке. Ночные часы включены.</p></div>
+        <div class="control-group"><span class="field-label">Сильнейшая сессия</span><p id="autonomous-time" class="field-hint"></p><p class="field-hint">Два последовательных полных часа с максимальной средней скоростью. Декабрь–март: 09–22. Апрель–ноябрь: световой день внутри 09–22. Неделя — семь дат с завтра.</p></div>
+        <div class="control-group"><div class="label-row"><label for="auto-cycle">Смена экранов</label><button id="auto-cycle" class="toggle" type="button" role="switch" aria-checked="true" aria-label="Автоматическая смена экранов"><span></span></button></div><div class="field-hint">1 → 2 → 3 → 4 → 5, по 10 секунд. Клавиши 1–5 закрепляют экран; пробел возвращает автоцикл.</div></div>
+        <details class="control-group"><summary>Моделирование времени и сети</summary><label for="simulation-time">Дата и время МСК (пусто — реальные часы)</label><input id="simulation-time" type="datetime-local"><label class="condition-check"><input id="clock-known" type="checkbox" checked> Время известно</label><label class="condition-check"><input id="simulate-offline" type="checkbox"> Нет сети</label><p class="field-hint">В режиме «Нет сети» данные сохраняются и стареют. Снимите флажок для обновления. Модель времени сбрасывается при перезапуске.</p></details>
+        <div class="control-group" id="demo-controls" hidden><div class="label-row"><label for="scenario">Демонстрационные данные</label><span class="demo-badge">8 ДНЕЙ</span></div><select id="scenario"><option value="mixed">Разные условия</option><option value="good">Хороший ветер</option><option value="calm">Слабый ветер</option><option value="gusts">Сильные порывы</option><option value="direction">Восточный ветер</option><option value="missing">Нет прогноза</option></select><p class="field-hint">Синтетический прогноз на восемь дней от выбранного времени. Оба датчика остаются реальными.</p></div>
+      </section>
+      <section id="tab-live" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-live" hidden>
+        <div class="control-group"><span class="field-label">Два датчика · два экрана</span><div id="station-readings" class="station-readings"></div><p id="station-status" class="field-hint"></p><p class="field-hint">Средний ветер и история за 6 часов. Потоки показывают, куда дует, и ускоряются с ветром.</p><p class="field-hint">Кайтпитер: задержка от 15 мин, устаревание от 30 мин. Пулково: от 45 и 90 мин. Устаревшее число скрывается; время и история сохраняются.</p><p class="field-hint">Источник: Windy.app, только измерения. Верхняя граница графика округляется до 5 м/с, минимум 10 м/с. Разрывы более 15 / 45 минут не соединяются.</p></div>
+      </section>
+      <section id="tab-display" class="tab-panel" role="tabpanel" aria-labelledby="tab-button-display" hidden>
+        <div class="control-group"><label for="brightness">Яркость дисплея</label><div class="range-row"><span aria-hidden="true">☼</span><input id="brightness" type="range" min="0" max="100" value="80"><output id="brightness-output">80%</output></div><p class="field-hint">Меняет цвета каждого из 4096 пикселей.</p></div>
+        <div class="control-group"><label for="brightness-mode">Режим освещения</label><select id="brightness-mode"><option value="day">Дневной</option><option value="night">Ночной</option><option value="schedule">По расписанию</option></select><label class="sub-label" for="night-brightness">Ночная яркость</label><div class="range-row"><input id="night-brightness" type="range" min="0" max="100" value="12"><output id="night-output">12%</output></div><p class="field-hint">Ночью яркость ограничена этим уровнем.</p></div>
+        <div class="control-group"><span class="field-label">Расписание затемнения</span><div class="two-fields"><label>Начало<input id="night-start" type="time" value="23:00" required></label><label>Окончание<input id="night-end" type="time" value="07:00" required></label></div><p id="schedule-hint" class="field-hint"></p><p class="field-hint">Одинаковое время отключает ночной интервал.</p><div class="effective-brightness">Сейчас на дисплее <strong id="effective-brightness">80%</strong></div></div>
+        <div class="control-group"><span class="field-label">Физическая матрица</span><dl class="specs"><div><dt>Размер изображения</dt><dd>64 × 64</dd></div><div><dt>Размер P3</dt><dd>192 × 192 мм</dd></div><div><dt>Частота анимаций</dt><dd>25 FPS</dd></div><div><dt>Датчик освещённости</dt><dd>В будущем</dd></div></dl></div>
+      </section>
+      <div class="recommendation" id="recommendation" aria-live="polite"><div class="recommendation-kicker">↗ <span id="recommendation-label">СИЛЬНЕЙШАЯ СЕССИЯ НЕДЕЛИ</span></div><h3 id="recommendation-title"></h3><p id="recommendation-description"></p></div>
+    </aside>
+    <section class="reading-guide" aria-label="Расшифровка дисплея"><div><span class="guide-icon">↙</span><p><strong>Стрелка — куда дует</strong><span>Потоки на датчиках — в ту же сторону.</span></p></div><div><span class="guide-icon">≈</span><p><strong>Обычная скорость ветра</strong><span>Прогноз и факт — в м/с.</span></p></div><div><span class="guide-icon">24</span><p><strong>Неделя — все часы суток</strong><span>Каждая полоса: 00–24. Серые точки — пропуски.</span></p></div></section>
+  </main>
+  <footer class="app-footer"><span>WIND64 <b>/</b> Дизайн-прототип 04</span><span>Сделано для ветра. Подготовлено для пикселей.</span><a href="./README.md" target="_blank" rel="noreferrer">О прототипе ↗</a></footer>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>

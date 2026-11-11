@@ -1,0 +1,17 @@
+.tools/
+device-backups/
+firmware/build/
+.DS_Store
+.playwright-mcp/
+node_modules/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+.venv/
+firmware/releases/
+firmware/verification*.json
+firmware/live-device-check*.json
+firmware/brightness-test/verification*.json
+wind64-prototype/artifacts/

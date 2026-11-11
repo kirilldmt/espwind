@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <title>WIND64 — проверка API по Wi-Fi</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; line-height: 1.55; background: #0c121b; color: #e4f2f5; }
+    body { max-width: 760px; margin: 0 auto; padding: 24px 18px 48px; }
+    h1 { font-size: clamp(25px, 5vw, 36px); line-height: 1.2; }
+    h2 { font-size: 21px; margin-top: 30px; }
+    a { color: #a4f6e5; }
+    .notice { padding: 16px; border: 1px solid #766039; border-radius: 12px; background: #292418; }
+    .links { display: grid; gap: 12px; margin: 24px 0; }
+    .links a { display: block; padding: 15px 18px; border-radius: 10px; background: #183b37; color: #a4f6e5; text-decoration: none; font-weight: 650; }
+    .links a:hover, .links a:focus { background: #255b51; outline: 2px solid #4edfc3; }
+    code { overflow-wrap: anywhere; color: #a4f6e5; }
+    small { color: #9eb3c0; }
+  </style>
+</head>
+<body>
+  <h1>Проверка Windy.app для WIND64</h1>
+  <p class="notice"><strong>Подключитесь к той же Wi-Fi-сети, что и табло.</strong>
+    API может плохо работать без VPN на роутере. VPN только на компьютере
+    или телефоне не меняет маршрут ESP32.</p>
+  <p>Кнопки открывают API в новых вкладках. Эта страница не отправляет фоновых
+    запросов и не читает ответы через CORS. Сначала проверьте станции,
+    затем отдельно дождитесь полной загрузки прогноза.</p>
+  <div class="links">
+    <a id="forecast" target="_blank" rel="noreferrer">Открыть прогноз Крона</a>
+    <a id="kitepiter" href="https://api.windyapp.co/v10/meteostations/getData/1chipru_840d8eaa9b63?predict=0&amp;canWindNull=1&amp;info=1" target="_blank" rel="noreferrer">Открыть измерения KITEPITER</a>
+    <a id="pulkovo" href="https://api.windyapp.co/v10/meteostations/getData/ULLI?predict=0&amp;canWindNull=1&amp;info=1" target="_blank" rel="noreferrer">Открыть измерения PULKOVO</a>
+  </div>
+  <p id="date"></p>
+  <noscript><p>Для ссылки на прогноз включите JavaScript в обычном браузере.
+    Ссылки на станции работают и без него.</p></noscript>
+  <h2>Как выглядит успех</h2>
+  <p>Браузер показывает полностью загруженный JSON с <code>status: success</code>.
+    Для станций нужен непустой массив <code>response.data</code>, для прогноза —
+    <code>response.forecast</code> и <code>response.timezone: Europe/Moscow</code>.</p>
+  <p>Открывающийся сайт или начало ответа ещё не доказывают успех: прогноз
+    может зависнуть в процессе загрузки. Ошибка сети, обрыв, 403 или 429 требуют
+    отдельной проверки. Не обновляйте API много раз подряд.</p>
+  <h2>Проверить само табло</h2>
+  <p>Откройте <a href="http://wind64.local/api/status">http://wind64.local/api/status</a>
+    или IP табло с окончанием <code>/api/status</code>. После первого подключения
+    подождите 30–60 секунд. Ищите <code>forecastReady: true</code>, готовность обеих
+    станций и <code>lastHttp: 200</code> с ненулевыми <code>successes</code> в
+    <code>polling</code>. Одного <code>connected: true</code> недостаточно.</p>
+  <p><small>Не публикуйте поля <code>token</code> и <code>ssid</code> из статуса устройства.
+    Один успешный запрос не гарантирует постоянную доступность внешнего сервиса.</small></p>
+  <script>
+    const now = Date.now();
+    const start = Math.floor((now + 3 * 3600000) / 86400000) * 86400 - 10800;
+    const url = new URL('https://api.windyapp.co/apiV9.php');
+    url.search = new URLSearchParams({method: 'forecastConstructor', from_ts: start,
+      to_ts: start + 8 * 86400, lat: '60.0111353', lon: '29.6915455',
+      models: 'gfs27_long', period: '1h', userID: 'webForecastWidgetAPI'}).toString();
+    document.querySelector('#forecast').href = url.href;
+    document.querySelector('#date').textContent = 'Ссылка создана для московской даты ' +
+      new Date(now).toLocaleDateString('ru-RU', {timeZone: 'Europe/Moscow'}) +
+      '. После смены даты обновите эту страницу. Загружаются восемь суток для внутренних расчётов; на недельном экране остаётся семь дней.';
+  </script>
+</body>
+</html>
