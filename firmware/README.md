@@ -1,6 +1,6 @@
 # WIND64 — сборка, установка и разработка
 
-Версия прошивки: **1.1.1**. Пользовательская инструкция и комплектующие —
+Версия прошивки: **1.1.2**. Пользовательская инструкция и комплектующие —
 в [корневом README](../README.md). Все команды ниже выполняются **из корня
 клонированного репозитория**. Проверенная среда — macOS; автоматическая сборка
 в GitHub Actions выполняется на Linux.
@@ -102,12 +102,12 @@ ls /dev/ttyACM*        # Linux
 
 ### Первоначальная установка из релиза
 
-Скачайте `wind64-1.1.1-firmware.zip` со страницы
+Скачайте `wind64-1.1.2-firmware.zip` со страницы
 [релизов](https://github.com/kirilldmt/espwind/releases/latest), распакуйте его
-в каталог `wind64-1.1.1` и проверьте контрольные суммы:
+в каталог `wind64-1.1.2` и проверьте контрольные суммы:
 
 ```sh
-cd wind64-1.1.1
+cd wind64-1.1.2
 shasum -a 256 -c SHA256SUMS
 cd ..
 ```
@@ -118,10 +118,10 @@ cd ..
 WIND64_PORT=/dev/cu.usbmodemXXXX
 .tools/serial-venv/bin/python -m esptool --chip esp32s3 \
   --port "$WIND64_PORT" --baud 921600 write_flash -z \
-  0x0 wind64-1.1.1/bootloader.bin \
-  0x8000 wind64-1.1.1/partitions.bin \
-  0xe000 wind64-1.1.1/boot_app0.bin \
-  0x10000 wind64-1.1.1/firmware.bin
+  0x0 wind64-1.1.2/bootloader.bin \
+  0x8000 wind64-1.1.2/partitions.bin \
+  0xe000 wind64-1.1.2/boot_app0.bin \
+  0x10000 wind64-1.1.2/firmware.bin
 ```
 
 Полный комплект предназначен для **указанной платы с 32 МБ Flash**. Он заменяет
@@ -140,7 +140,7 @@ WIND64_PORT=/dev/cu.usbmodemXXXX
   0x10000 firmware/build/wind64/wind64.ino.bin
 ```
 
-Для готового релизного файла замените последний путь на `wind64-1.1.1/firmware.bin`.
+Для готового релизного файла замените последний путь на `wind64-1.1.2/firmware.bin`.
 Дождитесь `Hash of data verified` и перезапуска. Во время записи матрица не рисует.
 На некоторых macOS-системах открытие USB CDC также перезапускает ESP32.
 Если порт не определяется, удерживайте BOOT, нажмите и отпустите RESET, затем

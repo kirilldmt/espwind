@@ -224,10 +224,10 @@ double crossing(double a, double b, double sa, double sb, double dt, double lw,
     else
       b = d;
     double step = f / (2 * PI * k * sin(H));
-    if (d + step > a && d + step < b && abs(step) <= abs(dx) / 2) {
+    if (d + step > a && d + step < b && std::abs(step) <= std::abs(dx) / 2) {
       dx = step;
       d += step;
-      if (abs(step) < 1e-5)
+      if (std::abs(step) < 1e-5)
         return d;
     } else {
       dx = (b - a) / 2;
@@ -296,7 +296,7 @@ bool better(const Session &a, const Session &b) {
   if (!b.valid())
     return true;
   double diff = a.wind - b.wind;
-  return abs(diff) > 1e-9   ? diff > 0
+  return std::abs(diff) > 1e-9   ? diff > 0
          : a.hour != b.hour ? a.hour < b.hour
                             : a.day < b.day;
 }

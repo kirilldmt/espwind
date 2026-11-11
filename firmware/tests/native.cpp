@@ -89,6 +89,11 @@ static void parserChecks() {
   assert(presentation.weekStart == base);
   assert(presentation.days.size() == 7);
   assert(presentation.best.day > base);
+  // A stronger session wins even when its advantage is less than 1 m/s.
+  assert(better(Session{base + DAY, 15, 5.7, 0},
+                Session{base + DAY, 9, 5.2, 0}));
+  assert(!better(Session{base + DAY, 9, 5.2, 0},
+                 Session{base + DAY, 15, 5.7, 0}));
   JsonDocument filter, filtered;
   weatherFilter(filter, true);
   d["noise"] = "unused";

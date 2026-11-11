@@ -19,7 +19,7 @@
 #include <sys/time.h>
 
 using namespace wind64;
-static constexpr const char *VERSION = "wind64-1.1.1";
+static constexpr const char *VERSION = "wind64-1.1.2";
 static SemaphoreHandle_t stateMutex;
 static Weather *weather, *displayWeather;
 static Settings settings;
